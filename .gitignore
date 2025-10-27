@@ -1,0 +1,47 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors/IDE
+.vscode/
+.idea/
+*.code-workspace
+*.swp
+*.swo
+
+# Build outputs
+build/
+Build/
+Debug/
+Release/
+*.o
+*.obj
+*.d
+*.map
+*.lst
+*.elf
+*.hex
+*.bin
+*.log
+
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+.clang_complete
+.gcc-flags.json
+
+# CubeMX
+.ioc-backup/
+MX_*/
+
+# Backups / temp
+**/*.bak
+**/*.old
+**/*.orig
+Core/**/Backup/
+
+# Python
+__pycache__/
+*.pyc

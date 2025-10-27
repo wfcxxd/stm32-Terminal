@@ -1,0 +1,58 @@
+合并说明（2025-10-16 00:17:00）
+====================================
+
+本项目以你上传的 `test-farmland` 为基础（PlatformIO；src_dir=Core/Src），
+将你之前的自定义代码模块（DHT11、SSD1306、SPI/I2C/TIM/ADC、系统时钟等）
+**无损合并**到 `Core/` 目录中，具体如下：
+
+一、文件整合
+-----------
+已复制到 Core/Src：
+- main.c、i2c.c、spi.c、gpio.c、tim.c、adc.c、DHT11.c、ssd1306.c、stm32f1xx_hal_msp.c、stm32f1xx_it.c
+
+已复制到 Core/Inc：
+- main.h、i2c.h、spi.h、gpio.h、tim.h、adc.h、DHT11.h、ssd1306.h、stm32f1xx_hal_conf.h、stm32f1xx_it.h、stm32_init.h
+
+为避免覆盖冲突，若原工程同名文件存在，已移动到：
+- Core/Src/Backup_before_merge/
+- Core/Inc/Backup_before_merge/
+
+二、开启 UART（蓝牙 BT08）
+----------------------
+- 已在 `Core/Inc/stm32f1xx_hal_conf.h` 中 **启用 HAL_UART_MODULE_ENABLED**。
+- 新增 `Core/Inc/usart.h` 与 `Core/Src/usart.c`，默认 **USART1：PA9=TX, PA10=RX, 9600 8N1, 无硬件流控**。
+- 在 `Core/Src/main.c` 中 **包含 usart.h**，并在初始化后调用：
+  ```c
+  MX_USART1_UART_Init();
+  HAL_Delay(100);
+  const char *bt_msg = "BT08 ready\r\n";
+  HAL_UART_Transmit(&huart1, (uint8_t*)bt_msg, strlen(bt_msg), 100);
+  ```
+
+三、构建说明
+----------
+- `platformio.ini` 已设置：
+  - `src_dir = Core/Src`
+  - `include_dir = Core/Inc`
+  - 已排除 `system_stm32f1xx.c` 重复编译。
+
+- 直接在项目根目录运行：
+  ```bash
+  pio run
+  pio run --target upload
+  ```
+
+四、连线与调试要点（BT08 四针）
+---------------------------
+- BT08.TXD → PA10 (USART1_RX)
+- BT08.RXD → PA9  (USART1_TX)
+- VCC → 3.3V；GND → GND
+- AT 指令以 CRLF 结尾（"\r\n"），**未连接手机**时才会应答 AT。
+
+五、可能的注意事项
+----------------
+1) 若你要改成 I2C 版 OLED，请替换 SSD1306 驱动为 I2C 版本并确保 I2C1 引脚正确；当前工程默认走 SPI1。  
+2) 若 CubeMX 重新生成代码，记得保留 `platformio.ini` 的 `src_dir/include_dir/build_src_filter`，并确保上面这些自定义文件仍在 Core/ 目录中。  
+3) 如需中断方式接收蓝牙数据，请在 CubeMX 勾选 USART1 NVIC，并在代码中调用 `HAL_UART_Receive_IT()` 或使用 DMA。
+
+—— 合并脚本自动生成
